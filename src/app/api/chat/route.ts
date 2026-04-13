@@ -17,7 +17,25 @@ IMPORTANT: Always remind users on sensitive questions that you provide legal inf
 
 export async function POST(req: NextRequest) {
   try {
-    const { messages } = await req.json();
+    const body = await req.json();
+    const { messages } = body;
+
+    if (!Array.isArray(messages) || messages.length === 0) {
+      return NextResponse.json({ content: "Invalid request." }, { status: 400 });
+    }
+
+    if (messages.length > 100) {
+      return NextResponse.json({ content: "Conversation too long. Please start a new session." }, { status: 400 });
+    }
+
+    for (const m of messages) {
+      if (!m || typeof m.role !== "string" || typeof m.content !== "string") {
+        return NextResponse.json({ content: "Invalid message format." }, { status: 400 });
+      }
+      if (m.content.length > 32000) {
+        return NextResponse.json({ content: "Message too long." }, { status: 400 });
+      }
+    }
 
     if (!process.env.ANTHROPIC_API_KEY) {
       return NextResponse.json(
@@ -29,8 +47,8 @@ export async function POST(req: NextRequest) {
     const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
     const response = await client.messages.create({
-      model: "claude-haiku-4-5-20251001",
-      max_tokens: 1024,
+      model: "claude-sonnet-4-6",
+      max_tokens: 2048,
       system: SYSTEM_PROMPT,
       messages: messages.map((m: { role: string; content: string }) => ({
         role: m.role,

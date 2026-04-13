@@ -1,7 +1,57 @@
 "use client";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 
 type Message = { role: "user" | "assistant"; content: string };
+
+function renderMarkdown(raw: string): string {
+  const esc = raw
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+
+  const inline = (s: string) =>
+    s
+      .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+      .replace(/\*([^*\n]+)\*/g, "<em>$1</em>")
+      .replace(/`([^`\n]+)`/g, '<code style="background:rgba(255,255,255,.08);border-radius:3px;padding:1px 5px;font-family:monospace;font-size:.82em">$1</code>');
+
+  const lines = esc.split("\n");
+  const out: string[] = [];
+  let listType: "ul" | "ol" | null = null;
+
+  const closeList = () => {
+    if (listType) { out.push(`</${listType}>`); listType = null; }
+  };
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const heading = line.match(/^(#{1,3})\s+(.*)/);
+    const bullet  = line.match(/^[-*]\s+(.*)/);
+    const ordered = line.match(/^\d+\.\s+(.*)/);
+
+    if (heading) {
+      closeList();
+      const sizes = ["1rem", ".925rem", ".875rem"];
+      const sz = sizes[heading[1].length - 1];
+      out.push(`<div style="font-weight:600;font-size:${sz};margin:.8rem 0 .25rem;color:#eeeef5">${inline(heading[2])}</div>`);
+    } else if (bullet) {
+      if (listType !== "ul") { closeList(); out.push('<ul style="margin:.35rem 0 .35rem 1.1rem;padding:0">'); listType = "ul"; }
+      out.push(`<li style="margin:.2rem 0">${inline(bullet[1])}</li>`);
+    } else if (ordered) {
+      if (listType !== "ol") { closeList(); out.push('<ol style="margin:.35rem 0 .35rem 1.1rem;padding:0">'); listType = "ol"; }
+      out.push(`<li style="margin:.2rem 0">${inline(ordered[1])}</li>`);
+    } else if (line.trim() === "") {
+      closeList();
+      if (out.length && out[out.length - 1] !== "<br/>") out.push("<br/>");
+    } else {
+      closeList();
+      out.push(inline(line) + (i < lines.length - 1 ? "<br/>" : ""));
+    }
+  }
+
+  closeList();
+  return out.join("");
+}
 
 const suggestions = [
   "Review this clause: 'All IP created during employment belongs to the company.'",
@@ -20,6 +70,7 @@ export default function Dashboard() {
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -27,7 +78,7 @@ export default function Dashboard() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
 
-  async function send(text?: string) {
+  const send = useCallback(async (text?: string) => {
     const content = text || input.trim();
     if (!content || loading) return;
 
@@ -35,7 +86,8 @@ export default function Dashboard() {
     const next = [...messages, userMsg];
     setMessages(next);
     setInput("");
-    if (textareaRef.current) textareaRef.current.style.height = "auto";
+    if (textareaRef.current) { textareaRef.current.style.height = "auto"; }
+    setSidebarOpen(false);
     setLoading(true);
 
     try {
@@ -50,13 +102,23 @@ export default function Dashboard() {
       setMessages([...next, { role: "assistant", content: "Connection error. Please try again." }]);
     } finally {
       setLoading(false);
+      textareaRef.current?.focus();
     }
-  }
+  }, [input, loading, messages]);
 
   return (
     <div style={{ display: "flex", height: "100vh", background: "#07070d", overflow: "hidden", fontFamily: "'DM Sans', sans-serif" }}>
+      {/* Sidebar overlay on mobile */}
+      {sidebarOpen && (
+        <div
+          onClick={() => setSidebarOpen(false)}
+          style={{ position: "fixed", inset: 0, zIndex: 10, background: "rgba(0,0,0,.5)" }}
+          className="sidebar-overlay"
+        />
+      )}
+
       {/* Sidebar */}
-      <aside style={{ width: 240, borderRight: "1px solid rgba(255,255,255,.06)", display: "flex", flexDirection: "column", padding: "1.2rem", flexShrink: 0, background: "rgba(10,10,18,.8)" }}>
+      <aside style={{ width: 240, borderRight: "1px solid rgba(255,255,255,.06)", display: "flex", flexDirection: "column", padding: "1.2rem", flexShrink: 0, background: "rgba(10,10,18,.8)", zIndex: 11, transition: "transform .25s ease" }} className={`sidebar${sidebarOpen ? " sidebar-open" : ""}`}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: "1.6rem" }}>
           <div style={{ width: 28, height: 28, background: "linear-gradient(135deg,#e8c97a,#8a6020)", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "serif", fontWeight: 700, fontSize: 13, color: "#07070d" }}>A</div>
           <span style={{ fontFamily: "'Playfair Display', serif", fontSize: "1rem", color: "#eeeef5" }}>Apollo Lawyer</span>
@@ -99,7 +161,15 @@ export default function Dashboard() {
       <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
         {/* Header */}
         <div style={{ height: 58, borderBottom: "1px solid rgba(255,255,255,.06)", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 1.6rem", flexShrink: 0, background: "rgba(7,7,13,.9)", backdropFilter: "blur(20px)" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <button
+              onClick={() => setSidebarOpen(o => !o)}
+              className="hamburger"
+              aria-label="Toggle sidebar"
+              style={{ display: "none", background: "none", border: "none", cursor: "pointer", padding: 4, flexDirection: "column", gap: 4 }}
+            >
+              {[0,1,2].map(i => <span key={i} style={{ display: "block", width: 18, height: 1.5, background: "#8080a0", borderRadius: 2 }} />)}
+            </button>
             <span style={{ fontFamily: "'Playfair Display', serif", fontSize: ".95rem", color: "#eeeef5" }}>Legal Assistant</span>
             <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#22c55e", boxShadow: "0 0 8px rgba(34,197,94,.6)" }} />
           </div>
@@ -140,9 +210,8 @@ export default function Dashboard() {
                   fontSize: ".875rem",
                   lineHeight: 1.72,
                   color: "#eeeef5",
-                  whiteSpace: "pre-wrap",
                 }}
-                dangerouslySetInnerHTML={{ __html: msg.content.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>").replace(/\n/g, "<br/>") }}
+                dangerouslySetInnerHTML={{ __html: renderMarkdown(msg.content) }}
               />
             </div>
           ))}
@@ -190,6 +259,12 @@ export default function Dashboard() {
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap');
         @keyframes bns { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
         ::-webkit-scrollbar{width:4px} ::-webkit-scrollbar-track{background:#07070d} ::-webkit-scrollbar-thumb{background:#3a3a5a;border-radius:2px}
+        @media(max-width:640px){
+          .sidebar { position:fixed; top:0; left:0; bottom:0; transform:translateX(-100%); }
+          .sidebar.sidebar-open { transform:translateX(0); }
+          .sidebar-overlay { display:block; }
+          .hamburger { display:flex !important; }
+        }
       `}</style>
     </div>
   );

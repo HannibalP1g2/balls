@@ -32,6 +32,7 @@ export default function Hero() {
         backgroundSize: "60px 60px",
         opacity: 0.3,
         pointerEvents: "none",
+        WebkitMaskImage: "radial-gradient(ellipse 80% 60% at 50% 40%, black 0%, transparent 100%)",
         maskImage: "radial-gradient(ellipse 80% 60% at 50% 40%, black 0%, transparent 100%)",
       }} />
 
