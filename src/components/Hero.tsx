@@ -117,7 +117,7 @@ export default function Hero() {
         </p>
 
         {/* Mock chat preview */}
-        <div className="animate-fade-up-delay-4" style={{
+        <div className="animate-float-delayed" style={{
           marginTop: "4rem",
           background: "rgba(14,14,24,0.7)",
           border: "1px solid var(--border-bright)",

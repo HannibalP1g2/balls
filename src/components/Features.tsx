@@ -60,16 +60,27 @@ export default function Features() {
         {features.map((f) => (
           <div
             key={f.title}
+            className="feature-card"
             style={{
               background: "var(--bg-card)",
               padding: "2rem",
-              transition: "background 0.2s",
+              transition: "background 0.25s",
               cursor: "default",
+              position: "relative",
+              overflow: "hidden",
             }}
-            onMouseOver={(e) => (e.currentTarget.style.background = "var(--bg-card-hover)")}
-            onMouseOut={(e) => (e.currentTarget.style.background = "var(--bg-card)")}
           >
-            <div style={{ fontSize: "1.8rem", marginBottom: "1rem" }}>{f.icon}</div>
+            <div style={{
+              width: 48, height: 48,
+              background: "rgba(201,168,76,0.08)",
+              border: "1px solid rgba(201,168,76,0.14)",
+              borderRadius: "10px",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: "1.4rem",
+              marginBottom: "1.2rem",
+            }}>
+              {f.icon}
+            </div>
             <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.1rem", marginBottom: "0.6rem", fontWeight: 500 }}>
               {f.title}
             </h3>
@@ -77,6 +88,20 @@ export default function Features() {
           </div>
         ))}
       </div>
+
+      <style>{`
+        .feature-card::before {
+          content: '';
+          position: absolute;
+          top: 0; left: 0; right: 0;
+          height: 2px;
+          background: linear-gradient(90deg, transparent, rgba(201,168,76,0.5), transparent);
+          opacity: 0;
+          transition: opacity 0.3s;
+        }
+        .feature-card:hover { background: var(--bg-card-hover) !important; }
+        .feature-card:hover::before { opacity: 1; }
+      `}</style>
     </section>
   );
 }

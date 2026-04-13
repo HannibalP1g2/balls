@@ -13,51 +13,52 @@ export default function HowItWorks() {
       padding: "100px 2rem",
       background: "linear-gradient(180deg, var(--bg) 0%, rgba(201,168,76,0.02) 50%, var(--bg) 100%)",
     }}>
-      <div style={{ maxWidth: "900px", margin: "0 auto" }}>
-        <div style={{ textAlign: "center", marginBottom: "60px" }}>
+      <div style={{ maxWidth: "760px", margin: "0 auto" }}>
+        <div style={{ textAlign: "center", marginBottom: "70px" }}>
           <p style={{ color: "var(--gold)", fontSize: "0.8rem", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "1rem" }}>
             The Process
           </p>
           <h2 style={{ fontSize: "clamp(2rem, 4vw, 3rem)" }}>How it works</h2>
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: "0" }}>
+        <div>
           {steps.map((step, i) => (
-            <div
-              key={step.num}
-              style={{
-                display: "flex",
-                gap: "2rem",
-                alignItems: "flex-start",
-                padding: "2.5rem 0",
-                borderBottom: i < steps.length - 1 ? "1px solid var(--border)" : "none",
-              }}
-            >
-              <div style={{
-                fontSize: "clamp(2.5rem, 5vw, 4rem)",
-                fontFamily: "'Playfair Display', serif",
-                color: "var(--border-bright)",
-                lineHeight: 1,
-                minWidth: "80px",
-                fontWeight: 700,
-              }}>
-                {step.num}
+            <div key={step.num} style={{ display: "flex", gap: "1.5rem", alignItems: "flex-start" }}>
+              {/* Timeline column */}
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0 }}>
+                <div style={{
+                  width: 48, height: 48,
+                  borderRadius: "50%",
+                  border: "1px solid var(--gold-dim)",
+                  background: "rgba(201,168,76,0.07)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontFamily: "'Playfair Display', serif",
+                  fontSize: "0.78rem",
+                  letterSpacing: "0.06em",
+                  color: "var(--gold)",
+                  fontWeight: 600,
+                  flexShrink: 0,
+                }}>
+                  {step.num}
+                </div>
+                {i < steps.length - 1 && (
+                  <div style={{
+                    width: 1,
+                    height: 64,
+                    background: "linear-gradient(to bottom, var(--gold-dim), transparent)",
+                    marginTop: 6,
+                  }} />
+                )}
               </div>
-              <div>
-                <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.3rem", marginBottom: "0.6rem", fontWeight: 500 }}>
+
+              {/* Content */}
+              <div style={{ paddingBottom: i < steps.length - 1 ? "1rem" : 0, paddingTop: "10px" }}>
+                <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.2rem", marginBottom: "0.5rem", fontWeight: 500 }}>
                   {step.title}
                 </h3>
-                <p style={{ color: "var(--text-muted)", lineHeight: 1.7, maxWidth: "500px" }}>{step.desc}</p>
-              </div>
-              <div style={{
-                marginLeft: "auto",
-                width: "48px", height: "48px",
-                border: "1px solid var(--border-bright)",
-                borderRadius: "50%",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                color: "var(--gold)", fontSize: "1.2rem", flexShrink: 0,
-              }}>
-                {i === 0 ? "✎" : i === 1 ? "◎" : i === 2 ? "✓" : "↗"}
+                <p style={{ color: "var(--text-muted)", lineHeight: 1.75, fontSize: "0.9rem", maxWidth: "520px" }}>
+                  {step.desc}
+                </p>
               </div>
             </div>
           ))}

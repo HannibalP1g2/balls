@@ -67,32 +67,42 @@ export default function Pricing() {
         display: "grid",
         gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
         gap: "1.5rem",
-        alignItems: "start",
+        alignItems: "center",
       }}>
         {plans.map((plan) => (
           <div
             key={plan.name}
+            className={plan.highlighted ? "pricing-card pricing-card--featured" : "pricing-card"}
             style={{
-              background: plan.highlighted ? "linear-gradient(135deg, rgba(201,168,76,0.08), rgba(201,168,76,0.02))" : "var(--bg-card)",
+              background: plan.highlighted
+                ? "linear-gradient(135deg, rgba(201,168,76,0.1), rgba(201,168,76,0.03))"
+                : "var(--bg-card)",
               border: plan.highlighted ? "1px solid var(--gold-dim)" : "1px solid var(--border)",
               borderRadius: "12px",
               padding: "2rem",
               position: "relative",
+              transform: plan.highlighted ? "scale(1.03)" : "none",
+              boxShadow: plan.highlighted
+                ? "0 0 0 1px rgba(201,168,76,0.2), 0 0 50px rgba(201,168,76,0.1), 0 24px 60px rgba(0,0,0,0.4)"
+                : "none",
+              transition: "box-shadow 0.3s, transform 0.3s",
             }}
           >
             {plan.highlighted && (
               <div style={{
-                position: "absolute", top: "-12px", left: "50%", transform: "translateX(-50%)",
+                position: "absolute", top: "-13px", left: "50%", transform: "translateX(-50%)",
                 background: "linear-gradient(135deg, var(--gold), var(--gold-dim))",
                 color: "#0a0a0f",
-                padding: "4px 16px",
+                padding: "4px 18px",
                 borderRadius: "100px",
-                fontSize: "0.7rem",
-                fontWeight: 500,
-                letterSpacing: "0.08em",
+                fontSize: "0.68rem",
+                fontWeight: 600,
+                letterSpacing: "0.1em",
                 textTransform: "uppercase",
                 whiteSpace: "nowrap",
-              }}>Most Popular</div>
+              }}>
+                Most Popular
+              </div>
             )}
 
             <p style={{ color: "var(--text-muted)", fontSize: "0.8rem", letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "0.5rem" }}>
@@ -115,6 +125,7 @@ export default function Pricing() {
 
             <Link
               href="/dashboard"
+              className="pricing-cta"
               style={{
                 display: "block",
                 textAlign: "center",
@@ -124,10 +135,10 @@ export default function Pricing() {
                 fontSize: "0.875rem",
                 fontWeight: 500,
                 letterSpacing: "0.02em",
+                transition: "opacity 0.2s",
                 background: plan.highlighted ? "linear-gradient(135deg, var(--gold), var(--gold-dim))" : "transparent",
                 color: plan.highlighted ? "#0a0a0f" : "var(--text)",
                 border: plan.highlighted ? "none" : "1px solid var(--border-bright)",
-                transition: "opacity 0.2s",
               }}
             >
               {plan.cta}
@@ -135,6 +146,14 @@ export default function Pricing() {
           </div>
         ))}
       </div>
+
+      <style>{`
+        .pricing-card:not(.pricing-card--featured):hover {
+          border-color: rgba(201,168,76,0.2) !important;
+          box-shadow: 0 8px 30px rgba(0,0,0,0.25) !important;
+        }
+        .pricing-cta:hover { opacity: 0.85; }
+      `}</style>
     </section>
   );
 }
