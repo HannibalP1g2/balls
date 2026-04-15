@@ -1,4 +1,5 @@
 "use client";
+import ScrollReveal from "./ScrollReveal";
 
 const steps = [
   { num: "01", title: "Describe your situation", desc: "Type your legal question or upload a document. Apollo understands plain English — no legal jargon needed." },
@@ -14,13 +15,16 @@ export default function HowItWorks() {
       background: "linear-gradient(180deg, var(--bg) 0%, rgba(201,168,76,0.02) 50%, var(--bg) 100%)",
     }}>
       <div style={{ maxWidth: "760px", margin: "0 auto" }}>
-        <div style={{ textAlign: "center", marginBottom: "70px" }}>
-          <p style={{ color: "var(--gold)", fontSize: "0.8rem", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "1rem" }}>
-            The Process
-          </p>
-          <h2 style={{ fontSize: "clamp(2rem, 4vw, 3rem)" }}>How it works</h2>
-        </div>
+        <ScrollReveal>
+          <div style={{ textAlign: "center", marginBottom: "70px" }}>
+            <p style={{ color: "var(--gold)", fontSize: "0.8rem", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "1rem" }}>
+              The Process
+            </p>
+            <h2 style={{ fontSize: "clamp(2rem, 4vw, 3rem)" }}>How it works</h2>
+          </div>
+        </ScrollReveal>
 
+        <ScrollReveal delay={100}>
         <div>
           {steps.map((step, i) => (
             <div key={step.num} style={{ display: "flex", gap: "1.5rem", alignItems: "flex-start" }}>
@@ -63,6 +67,8 @@ export default function HowItWorks() {
             </div>
           ))}
         </div>
+      </div>
+        </ScrollReveal>
       </div>
     </section>
   );

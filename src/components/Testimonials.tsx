@@ -1,4 +1,5 @@
 "use client";
+import ScrollReveal from "./ScrollReveal";
 
 const testimonials = [
   {
@@ -24,13 +25,16 @@ const testimonials = [
 export default function Testimonials() {
   return (
     <section style={{ padding: "80px 2rem", maxWidth: "1100px", margin: "0 auto" }}>
-      <div style={{ textAlign: "center", marginBottom: "56px" }}>
-        <p style={{ color: "var(--gold)", fontSize: "0.8rem", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "1rem" }}>
-          From Our Users
-        </p>
-        <h2 style={{ fontSize: "clamp(1.8rem, 3.5vw, 2.8rem)" }}>What businesses are saying</h2>
-      </div>
+      <ScrollReveal>
+        <div style={{ textAlign: "center", marginBottom: "56px" }}>
+          <p style={{ color: "var(--gold)", fontSize: "0.8rem", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "1rem" }}>
+            From Our Users
+          </p>
+          <h2 style={{ fontSize: "clamp(1.8rem, 3.5vw, 2.8rem)" }}>What businesses are saying</h2>
+        </div>
+      </ScrollReveal>
 
+      <ScrollReveal delay={100}>
       <div style={{
         display: "grid",
         gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
@@ -107,6 +111,7 @@ export default function Testimonials() {
         ))}
       </div>
 
+      </ScrollReveal>
       <style>{`
         .testimonial-card:hover {
           border-color: rgba(201,168,76,0.25) !important;

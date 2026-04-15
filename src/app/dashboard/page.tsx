@@ -84,11 +84,20 @@ export default function Dashboard() {
 
     const userMsg: Message = { role: "user", content };
     const next = [...messages, userMsg];
-    setMessages(next);
+
+    // Pre-add empty assistant message (will be filled by stream)
+    setMessages([...next, { role: "assistant", content: "" }]);
     setInput("");
-    if (textareaRef.current) { textareaRef.current.style.height = "auto"; }
+    if (textareaRef.current) textareaRef.current.style.height = "auto";
     setSidebarOpen(false);
     setLoading(true);
+
+    const setLastMsg = (c: string) =>
+      setMessages(prev => {
+        const u = [...prev];
+        u[u.length - 1] = { role: "assistant", content: c };
+        return u;
+      });
 
     try {
       const res = await fetch("/api/chat", {
@@ -96,15 +105,36 @@ export default function Dashboard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages: next }),
       });
-      const data = await res.json();
-      setMessages([...next, { role: "assistant", content: data.content }]);
+
+      if (!res.ok || !res.body) {
+        const errText = await res.text().catch(() => "");
+        setLastMsg(errText || "Connection error. Please try again.");
+        return;
+      }
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value, { stream: true });
+        setMessages(prev => {
+          const u = [...prev];
+          u[u.length - 1] = { role: "assistant", content: u[u.length - 1].content + chunk };
+          return u;
+        });
+      }
     } catch {
-      setMessages([...next, { role: "assistant", content: "Connection error. Please try again." }]);
+      setLastMsg("Connection error. Please try again.");
     } finally {
       setLoading(false);
       textareaRef.current?.focus();
     }
   }, [input, loading, messages]);
+
+  const isStreaming = (i: number) => loading && i === messages.length - 1 && messages[i].role === "assistant";
+  const showLoadingDots = loading && messages[messages.length - 1]?.role === "assistant" && messages[messages.length - 1]?.content === "";
 
   return (
     <div style={{ display: "flex", height: "100vh", background: "#07070d", overflow: "hidden", fontFamily: "'DM Sans', sans-serif" }}>
@@ -125,7 +155,7 @@ export default function Dashboard() {
         </div>
 
         <button
-          onClick={() => setMessages([{ role: "assistant", content: "New session. How can I help?" }])}
+          onClick={() => { setMessages([{ role: "assistant", content: "New session. How can I help?" }]); setSidebarOpen(false); }}
           style={{ background: "linear-gradient(135deg,#c9a84c,#8a6020)", color: "#07070d", border: "none", borderRadius: 8, padding: "10px 14px", fontSize: ".82rem", fontWeight: 500, cursor: "pointer", marginBottom: "1.4rem", textAlign: "left", fontFamily: "'DM Sans', sans-serif" }}
         >
           + New Conversation
@@ -201,6 +231,7 @@ export default function Dashboard() {
                 <div style={{ width: 28, height: 28, borderRadius: "50%", background: "linear-gradient(135deg,#c9a84c,#8a6020)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "serif", fontWeight: 700, fontSize: 12, color: "#07070d", flexShrink: 0, marginTop: 2 }}>A</div>
               )}
               <div
+                className={isStreaming(i) && msg.content.length > 0 ? "streaming-cursor" : ""}
                 style={{
                   maxWidth: "62%",
                   padding: "12px 16px",
@@ -210,18 +241,20 @@ export default function Dashboard() {
                   fontSize: ".875rem",
                   lineHeight: 1.72,
                   color: "#eeeef5",
+                  minHeight: msg.role === "assistant" && msg.content === "" ? "46px" : undefined,
                 }}
                 dangerouslySetInnerHTML={{ __html: renderMarkdown(msg.content) }}
               />
             </div>
           ))}
 
-          {loading && (
+          {/* Loading dots — only before first chunk arrives */}
+          {showLoadingDots && (
             <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
               <div style={{ width: 28, height: 28, borderRadius: "50%", background: "linear-gradient(135deg,#c9a84c,#8a6020)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "serif", fontWeight: 700, fontSize: 12, color: "#07070d", flexShrink: 0 }}>A</div>
               <div style={{ background: "rgba(14,14,24,.8)", border: "1px solid rgba(255,255,255,.06)", borderRadius: "12px 12px 12px 3px", padding: "14px 18px", display: "flex", gap: 5 }}>
                 {[0, 1, 2].map(i => (
-                  <div key={i} style={{ width: 5, height: 5, borderRadius: "50%", background: "#8a6020", animation: `bns .9s ease ${i * .15}s infinite` }} />
+                  <div key={i} style={{ width: 5, height: 5, borderRadius: "50%", background: "#c9a84c", animation: `bns .9s ease ${i * .15}s infinite` }} />
                 ))}
               </div>
             </div>
@@ -243,14 +276,16 @@ export default function Dashboard() {
             onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
             placeholder="Ask Apollo a legal question..."
             rows={1}
-            style={{ flex: 1, background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.1)", borderRadius: 10, padding: "12px 15px", color: "#eeeef5", fontSize: ".875rem", resize: "none", outline: "none", fontFamily: "'DM Sans', sans-serif", lineHeight: 1.5 }}
+            style={{ flex: 1, background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.1)", borderRadius: 10, padding: "12px 15px", color: "#eeeef5", fontSize: ".875rem", resize: "none", outline: "none", fontFamily: "'DM Sans', sans-serif", lineHeight: 1.5, transition: "border-color .2s" }}
+            onFocus={e => (e.target.style.borderColor = "rgba(201,168,76,.3)")}
+            onBlur={e => (e.target.style.borderColor = "rgba(255,255,255,.1)")}
           />
           <button
             onClick={() => send()}
             disabled={loading || !input.trim()}
-            style={{ background: loading || !input.trim() ? "rgba(255,255,255,.06)" : "linear-gradient(135deg,#c9a84c,#8a6020)", color: loading || !input.trim() ? "#3a3a5a" : "#07070d", border: "none", borderRadius: 10, padding: "12px 20px", fontSize: ".875rem", fontWeight: 500, cursor: loading || !input.trim() ? "not-allowed" : "pointer", fontFamily: "'DM Sans', sans-serif", flexShrink: 0 }}
+            style={{ background: loading || !input.trim() ? "rgba(255,255,255,.06)" : "linear-gradient(135deg,#c9a84c,#8a6020)", color: loading || !input.trim() ? "#3a3a5a" : "#07070d", border: "none", borderRadius: 10, padding: "12px 20px", fontSize: ".875rem", fontWeight: 500, cursor: loading || !input.trim() ? "not-allowed" : "pointer", fontFamily: "'DM Sans', sans-serif", flexShrink: 0, transition: "all .2s" }}
           >
-            Send
+            {loading ? "···" : "Send"}
           </button>
         </div>
       </div>

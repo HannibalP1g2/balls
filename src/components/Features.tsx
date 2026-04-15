@@ -1,4 +1,5 @@
 "use client";
+import ScrollReveal from "./ScrollReveal";
 
 const features = [
   {
@@ -36,18 +37,21 @@ const features = [
 export default function Features() {
   return (
     <section id="features" style={{ padding: "100px 2rem", maxWidth: "1100px", margin: "0 auto" }}>
-      <div style={{ textAlign: "center", marginBottom: "60px" }}>
-        <p style={{ color: "var(--gold)", fontSize: "0.8rem", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "1rem" }}>
-          What Apollo Does
-        </p>
-        <h2 style={{ fontSize: "clamp(2rem, 4vw, 3rem)", marginBottom: "1rem" }}>
-          Everything a small business needs
-        </h2>
-        <p style={{ color: "var(--text-muted)", maxWidth: "480px", margin: "0 auto", lineHeight: 1.7 }}>
-          Apollo Lawyer covers the full spectrum of legal needs that trip up growing businesses — without the $400/hour rate.
-        </p>
-      </div>
+      <ScrollReveal>
+        <div style={{ textAlign: "center", marginBottom: "60px" }}>
+          <p style={{ color: "var(--gold)", fontSize: "0.8rem", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "1rem" }}>
+            What Apollo Does
+          </p>
+          <h2 style={{ fontSize: "clamp(2rem, 4vw, 3rem)", marginBottom: "1rem" }}>
+            Everything a small business needs
+          </h2>
+          <p style={{ color: "var(--text-muted)", maxWidth: "480px", margin: "0 auto", lineHeight: 1.7 }}>
+            Apollo Lawyer covers the full spectrum of legal needs that trip up growing businesses — without the $400/hour rate.
+          </p>
+        </div>
+      </ScrollReveal>
 
+      <ScrollReveal delay={150}>
       <div style={{
         display: "grid",
         gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
@@ -89,6 +93,7 @@ export default function Features() {
         ))}
       </div>
 
+      </ScrollReveal>
       <style>{`
         .feature-card::before {
           content: '';

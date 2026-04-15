@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import ScrollReveal from "./ScrollReveal";
 
 export default function CTA() {
   return (
@@ -22,6 +23,7 @@ export default function CTA() {
       }} />
 
       {/* Border box */}
+      <ScrollReveal>
       <div style={{
         maxWidth: "740px",
         margin: "0 auto",
@@ -117,6 +119,7 @@ export default function CTA() {
           No credit card required · Cancel anytime
         </p>
       </div>
+      </ScrollReveal>
     </section>
   );
 }

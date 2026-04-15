@@ -5,14 +5,18 @@ import Link from "next/link";
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", handleScroll);
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+      const total = document.documentElement.scrollHeight - window.innerHeight;
+      setScrollProgress(total > 0 ? (window.scrollY / total) * 100 : 0);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Close menu on resize to desktop
   useEffect(() => {
     const handleResize = () => { if (window.innerWidth > 768) setMenuOpen(false); };
     window.addEventListener("resize", handleResize);
@@ -24,9 +28,7 @@ export default function Navbar() {
       <nav
         style={{
           position: "fixed",
-          top: 0,
-          left: 0,
-          right: 0,
+          top: 0, left: 0, right: 0,
           zIndex: 100,
           padding: "0 2rem",
           height: "64px",
@@ -39,6 +41,17 @@ export default function Navbar() {
           transition: "all 0.3s ease",
         }}
       >
+        {/* Scroll progress bar */}
+        <div style={{
+          position: "absolute",
+          top: 0, left: 0,
+          height: "2px",
+          width: `${scrollProgress}%`,
+          background: "linear-gradient(90deg, var(--gold-dim), var(--gold-light))",
+          transition: "width 0.08s linear",
+          borderRadius: "0 2px 2px 0",
+        }} />
+
         <Link href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: "10px" }}>
           <div style={{
             width: 32, height: 32,
@@ -59,13 +72,7 @@ export default function Navbar() {
             <a
               key={item}
               href={`#${item.toLowerCase().replace(/\s+/g, "-")}`}
-              style={{
-                color: "var(--text-muted)",
-                textDecoration: "none",
-                fontSize: "0.875rem",
-                letterSpacing: "0.02em",
-                transition: "color 0.2s",
-              }}
+              style={{ color: "var(--text-muted)", textDecoration: "none", fontSize: "0.875rem", letterSpacing: "0.02em", transition: "color 0.2s" }}
               onMouseOver={(e) => (e.currentTarget.style.color = "var(--text)")}
               onMouseOut={(e) => (e.currentTarget.style.color = "var(--text-muted)")}
             >
@@ -96,69 +103,32 @@ export default function Navbar() {
         <button
           onClick={() => setMenuOpen(!menuOpen)}
           className="mobile-menu-btn"
-          style={{
-            display: "none",
-            background: "none",
-            border: "none",
-            cursor: "pointer",
-            padding: "6px",
-            flexDirection: "column",
-            gap: "5px",
-            alignItems: "flex-end",
-          }}
+          style={{ display: "none", background: "none", border: "none", cursor: "pointer", padding: "6px", flexDirection: "column", gap: "5px", alignItems: "flex-end" }}
           aria-label="Toggle menu"
         >
-          <span style={{
-            display: "block", height: "1.5px", background: "var(--text)",
-            borderRadius: "2px",
-            width: menuOpen ? "22px" : "22px",
-            transform: menuOpen ? "rotate(45deg) translate(4.5px, 4.5px)" : "none",
-            transition: "transform 0.25s",
-          }} />
-          <span style={{
-            display: "block", height: "1.5px", background: "var(--text)",
-            borderRadius: "2px", width: "16px",
-            opacity: menuOpen ? 0 : 1,
-            transition: "opacity 0.25s",
-          }} />
-          <span style={{
-            display: "block", height: "1.5px", background: "var(--text)",
-            borderRadius: "2px", width: "22px",
-            transform: menuOpen ? "rotate(-45deg) translate(4.5px, -4.5px)" : "none",
-            transition: "transform 0.25s",
-          }} />
+          <span style={{ display: "block", height: "1.5px", background: "var(--text)", borderRadius: "2px", width: "22px", transform: menuOpen ? "rotate(45deg) translate(4.5px, 4.5px)" : "none", transition: "transform 0.25s" }} />
+          <span style={{ display: "block", height: "1.5px", background: "var(--text)", borderRadius: "2px", width: "16px", opacity: menuOpen ? 0 : 1, transition: "opacity 0.25s" }} />
+          <span style={{ display: "block", height: "1.5px", background: "var(--text)", borderRadius: "2px", width: "22px", transform: menuOpen ? "rotate(-45deg) translate(4.5px, -4.5px)" : "none", transition: "transform 0.25s" }} />
         </button>
       </nav>
 
       {/* Mobile dropdown */}
       {menuOpen && (
         <div style={{
-          position: "fixed",
-          top: "64px",
-          left: 0,
-          right: 0,
+          position: "fixed", top: "64px", left: 0, right: 0,
           zIndex: 99,
           background: "rgba(10,10,15,0.97)",
           backdropFilter: "blur(12px)",
           borderBottom: "1px solid var(--border)",
           padding: "1.5rem 2rem 2rem",
-          display: "flex",
-          flexDirection: "column",
-          gap: "0",
+          display: "flex", flexDirection: "column", gap: "0",
         }}>
           {["Features", "How It Works", "Pricing"].map((item) => (
             <a
               key={item}
               href={`#${item.toLowerCase().replace(/\s+/g, "-")}`}
               onClick={() => setMenuOpen(false)}
-              style={{
-                color: "var(--text-muted)",
-                textDecoration: "none",
-                fontSize: "1rem",
-                padding: "1rem 0",
-                borderBottom: "1px solid var(--border)",
-                letterSpacing: "0.02em",
-              }}
+              style={{ color: "var(--text-muted)", textDecoration: "none", fontSize: "1rem", padding: "1rem 0", borderBottom: "1px solid var(--border)", letterSpacing: "0.02em" }}
             >
               {item}
             </a>
@@ -166,18 +136,7 @@ export default function Navbar() {
           <Link
             href="/dashboard"
             onClick={() => setMenuOpen(false)}
-            style={{
-              display: "block",
-              textAlign: "center",
-              background: "linear-gradient(135deg, var(--gold), var(--gold-dim))",
-              color: "#0a0a0f",
-              padding: "14px 20px",
-              borderRadius: "8px",
-              textDecoration: "none",
-              fontSize: "0.95rem",
-              fontWeight: 500,
-              marginTop: "1.5rem",
-            }}
+            style={{ display: "block", textAlign: "center", background: "linear-gradient(135deg, var(--gold), var(--gold-dim))", color: "#0a0a0f", padding: "14px 20px", borderRadius: "8px", textDecoration: "none", fontSize: "0.95rem", fontWeight: 500, marginTop: "1.5rem" }}
           >
             Get Started
           </Link>

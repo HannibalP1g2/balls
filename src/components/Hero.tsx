@@ -14,7 +14,7 @@ export default function Hero() {
       overflow: "hidden",
       textAlign: "center",
     }}>
-      {/* Background radial glow */}
+      {/* Background radial glow — primary */}
       <div style={{
         position: "absolute",
         top: "30%",
@@ -24,6 +24,18 @@ export default function Hero() {
         height: "900px",
         background: "radial-gradient(circle, rgba(201,168,76,0.07) 0%, transparent 65%)",
         pointerEvents: "none",
+        animation: "float 8s ease-in-out infinite",
+      }} />
+      {/* Background radial glow — secondary (moves opposite) */}
+      <div style={{
+        position: "absolute",
+        bottom: "10%",
+        right: "5%",
+        width: "550px",
+        height: "550px",
+        background: "radial-gradient(circle, rgba(201,168,76,0.04) 0%, transparent 70%)",
+        pointerEvents: "none",
+        animation: "float 10s ease-in-out 2s infinite reverse",
       }} />
       {/* Grid lines */}
       <div style={{
