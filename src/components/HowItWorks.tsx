@@ -67,7 +67,6 @@ export default function HowItWorks() {
             </div>
           ))}
         </div>
-      </div>
         </ScrollReveal>
       </div>
     </section>
